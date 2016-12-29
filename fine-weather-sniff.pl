@@ -14,7 +14,7 @@
 
 # debug printing level 0...3
 # $debug = 0;
-$debug = 2;
+$debug = 3;
 
 #========================================================
 			# required modules:
@@ -73,24 +73,29 @@ if (0) {
   $inpipe .= " |";
 }
 
+
+
 #=============================================================
 # working code starting here
 
 # open database connection
 
-debug_print(2, "\n$0 connecting as user <$user> to database <$database> at host <$DBHost>...\n");
+#debug_print(1, "\n$0 connecting as user <$user> to database <$database> at host <$DBHost>...\n");
 
-$dsn = "DBI:$driver:$database;$DBHost";
-$dbh = DBI->connect($dsn, $user, $passwd) 
-	|| die ("Could not connect to database: $DBI::errstr\n");
+#$dsn = "DBI:$driver:$database;$DBHost";
+#$dbh = DBI->connect($dsn, $user, $passwd) 
+		; ###### debug - not database
+#####	|| die ("Could not connect to database: $DBI::errstr\n");
 	# || sqlerror($dbh, "", "Could not connect: $DBI::errstr\n");
 
-debug_print(2,  "\t...connected to database \n\n") ;
+#debug_print(1,  "\t...connected to database \n\n") ;
 
 # open radio
-debug_print (2, sprintf "opening >%s< \n", $inpipe); 
+debug_print (1, sprintf "opening >%s< \n", $inpipe); 
 
 open (INPUT, $inpipe) || die (sprintf "cannot open >%s< \n", $inpipe) ;
+
+debug_print (1, "radio pipe established\n\n");
 
 while(<INPUT>) {
   chomp;
@@ -240,7 +245,7 @@ while(<INPUT>) {
   ## sleep(1);	####### for debug - generate different timestamps! 
 
   # execute sql statement
-  $affected = $dbh->do($sql);
+ ####  $affected = $dbh->do($sql);
   debug_print (2, "\t$affected Datasets updated\n");
 
 }
@@ -249,7 +254,7 @@ while(<INPUT>) {
 close (INPUT);
 
 # close database
-$dbh->disconnect ;
+######### $dbh->disconnect ;
 
 exit ;
 
