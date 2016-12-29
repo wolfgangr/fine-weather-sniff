@@ -7,7 +7,7 @@ $inpipe = "grep '\\[00\\] {88} 00' test868_250_01.dump";
 $inpipe .= " | cut -b14-42";
 $inpipe .= " |";
 
-# debug printing on/off
+# debug printing level 0...3 
 $debug = 0;
 $debug = 1;
 
@@ -17,8 +17,8 @@ while(<INPUT>) {
   chomp;
 
   @bytes_ff = split ' ';
-  debug_print (join '#', @bytes_ff) ;
-  debug_print ("\n");
+  debug_print (2, join '#', @bytes_ff) ;
+  debug_print (2, "\n");
 
 
   @bytes = ();
@@ -26,19 +26,19 @@ while(<INPUT>) {
     push ( @bytes, ( sprintf "%02x" , (hex $byte_h ^ 0xff) ) );
   }
 
-  debug_print (join ':', @bytes );
-  debug_print ("\n");
+  debug_print (3, join ':', @bytes );
+  debug_print (3, "\n");
 
   s/ //g;	# remove all space
   $rawFF = $_;
 
-  debug_print ($rawFF);
-  debug_print ("\n");
+  debug_print (3, $rawFF);
+  debug_print (3, "\n");
 
   $raw = join '', @bytes ;
   
-  debug_print ($raw);
-  debug_print ("\n");
+  debug_print (3, $raw);
+  debug_print (3, "\n");
 
   # calculate checsum
   # adapted from
@@ -62,7 +62,7 @@ while(<INPUT>) {
 
   # print "\n";
   # printf " digest %02x - check vs %s\n", $crc, $crx;
-  debug_print (sprintf " digest %02x \n ", $crc) ;
+  debug_print (1, sprintf " digest %02x \n ", $crc) ;
 
 	# http://www.susa.net/wordpress/2012/08/
 	# 	raspberry-pi-reading-wh1081-weather-sensors-using-an-rfm01-and-rfm12b/#comment-1138
@@ -84,7 +84,7 @@ while(<INPUT>) {
   ($ident_h, $temp_h, $hum_h, $wspeed_h, $wgust_h,  $raincnt_h, $lobat_h, $wdir_h, $crc_h) 
 	= ( $raw =~ /(...)(...)(..)(..)(..).(...)(.)(.)(..)/ );
 
-  debug_print(sprintf "  RAW:  ident: %s T=%s RF=%s WS=%s Gst=%s raincnt=%s lob=%s, wd=%s crc=%s \n" ,
+  debug_print(2, sprintf "  RAW:  ident: %s T=%s RF=%s WS=%s Gst=%s raincnt=%s lob=%s, wd=%s crc=%s \n" ,
         $ident_h, $temp_h, $hum_h, $wspeed_h, $wgust_h,  $raincnt_h, $lobat_h, $wdir_h, $crc_h);
   # print "\n";
 
@@ -104,9 +104,9 @@ while(<INPUT>) {
   # $crc = sprintf "%02x",  (hex $crc ^ 0xff);
   $crc = $crc_h; 
 
-  debug_print (sprintf "  CONV: ident: %s T=%s RF=%s WS=%s Gst=%s raincnt=%s lob=%s, wd=%s crc=%s \n" , 
+  debug_print (1, sprintf "  CONV: ident: %s T=%s RF=%s WS=%s Gst=%s raincnt=%s lob=%s, wd=%s crc=%s \n" , 
 	$ident, $temp, $hum, $wspeed, $wgust,  $raincnt, $lobat, $wdir, $crc);
-  debug_print ("\n");
+  debug_print (2, "\n");
   # print "\n";
 
 }
@@ -119,7 +119,9 @@ exit ;
 
 #============================================
 
+# debug_print($level, $content)
 sub debug_print {
-  print STDERR @_ if $debug ;
+  $level = shift @_;
+  print STDERR @_ if ( $level <= $debug) ;
   # print  @_ if $debug ;
 }
