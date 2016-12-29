@@ -14,15 +14,19 @@ $inpipe .= " -f 868.250e6";	# center frequ
 $inpipe .= " -a";		# analse option
 $inpipe .= " 2>&1 ";		# merge stderr
 
-# $inpipe .= " | tee debug.log ";
+$inpipe .= " | expect_unbuffer -p ";	# turn off buffering
+$inpipe .= " tee debug.log ";
 
 # debug test dummy source
 # $inpipe = "cat test868_250_01.dump";
-$inpipe = "cat debug.log ";
+# $inpipe = "cat debug.log ";
 
-$inpipe .= " | grep '\\[00\\] {88} 00' ";
+$inpipe .= " | expect_unbuffer -p ";
+$inpipe .= " grep '\\[00\\] {88} 00' ";
 
-$inpipe .= " | cut -b14-42";
+$inpipe .= " | expect_unbuffer -p ";
+$inpipe .= " cut -b14-42";
+
 $inpipe .= " |";
 
 # debug printing level 0...3 
