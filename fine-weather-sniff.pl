@@ -7,14 +7,16 @@ $inpipe = "grep '\\[00\\] {88} 00' test868_250_01.dump";
 $inpipe .= " | cut -b14-42";
 $inpipe .= " |";
 
+$debug = 1;
+
 open (INPUT, $inpipe);
 
 while(<INPUT>) {
   chomp;
 
   @bytes_ff = split ' ';
-  print join '#', @bytes_ff ;
-  print "\n";
+  if $debug print join '#', @bytes_ff ;
+  if $debug print "\n";
 
 
 
@@ -25,9 +27,6 @@ while(<INPUT>) {
 
   print join ':', @bytes ;
   print "\n";
-
-# exit ; # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
 
   s/ //g;	# remove all space
   $rawFF = $_;
@@ -40,37 +39,23 @@ while(<INPUT>) {
   print $raw;
   print "\n";
 
-# exit ; # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-  # $chksum = 0;
-  $crc = 0b00000000;
-
-  # while (0) {
+  # calculate checsum
+  # adapted from
+  # http://www.susa.net/wordpress/wp-content/uploads/2012/08/wh1080_rf_v0.3.tgz
+  $crc = 0x0 ;
   foreach $byte_h  (@bytes[0 .. 8]) {
     $byte = hex $byte_h ;
-    printf "%s-%02x:" ,  $byte_h, $byte;
-    # see http://qs343.pair.com/~monkperl/index.pl?node_id=1064732
+    # printf "%s-%02x:" ,  $byte_h, $byte;
     for ($i = 8; $i  ; $i--) {
-      # $bit = $byte & 0x80 ; # 0b00000001;
-      # $test = $crc ^ $bit;
       $mix = ($crc ^ $byte) & 0x80 ;
-      # $test = $test & 0b00000001;      
-      # if ($test) {
-      #   $crc = $crc ^ 0b00011000;
-      #   $crc = $crc | 0b100000000;
-      # }
       $crc  <<= 1;
       $crc &=  0xff ; # stay within 8 bits )
       if ($mix) {
-        $crc  ^= 0x31; # 0b00011000;
-        # $crc = $crc | 0b100000000;
+        $crc  ^= 0x31; 
       }
-
-
       $byte <<= 1 ;
     }
-    printf " crc:%02x  ", $crc;  
-
+    # printf " crc:%02x  ", $crc;  
   }
   
 
