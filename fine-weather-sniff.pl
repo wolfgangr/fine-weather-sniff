@@ -237,12 +237,19 @@ while(<INPUT>) {
   $sql .= " );" ;
 
   debug_print (2, "SQL-Statement: $sql \n");
+  sleep(1);	####### for debug - generate different timestamps! 
+
+  # execute sql statement
+  $affected = $dbh->do($sql);
+  debug_print (2, "\t$affected Datasets updated\n");
 
 }
 
-
+# close pipe from radio
 close (INPUT);
 
+# close database
+$dbh->disconnect ;
 
 exit ;
 
