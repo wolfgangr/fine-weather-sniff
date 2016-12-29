@@ -16,10 +16,11 @@ while(<INPUT>) {
   print join '#', @bytes_ff ;
   print "\n";
 
+
+
   @bytes = ();
   foreach $byte_h (@bytes_ff) {
     push ( @bytes, ( sprintf "%02x" , (hex $byte_h ^ 0xff) ) );
-
   }
 
   print join ':', @bytes ;
@@ -45,24 +46,31 @@ while(<INPUT>) {
   $crc = 0b00000000;
 
   # while (0) {
-  foreach $byte_h (@bytes) {
+  foreach $byte_h  (@bytes[0 .. 8]) {
     $byte = hex $byte_h ;
-    # printf "%s - %02x : " ,  $byte_h, $byte;
+    printf "%s-%02x:" ,  $byte_h, $byte;
     # see http://qs343.pair.com/~monkperl/index.pl?node_id=1064732
-    for ($n = 0; $n <= 7; $n++) {
-      $bit = $byte & 0b00000001;
-      $test = $crc ^ $bit;
-      $test = $test & 0b00000001;      
-      if ($test) {
-        $crc = $crc ^ 0b00011000;
-        # $crc = $crc >> 1;
-        $crc = $crc | 0b100000000;
-      # } else {
-      #   $crc = $crc >> 1;
+    for ($i = 8; $i  ; $i--) {
+      # $bit = $byte & 0x80 ; # 0b00000001;
+      # $test = $crc ^ $bit;
+      $mix = ($crc ^ $byte) & 0x80 ;
+      # $test = $test & 0b00000001;      
+      # if ($test) {
+      #   $crc = $crc ^ 0b00011000;
+      #   $crc = $crc | 0b100000000;
+      # }
+      $crc  <<= 1;
+      $crc &=  0xff ; # stay within 8 bits )
+      if ($mix) {
+        $crc  ^= 0x31; # 0b00011000;
+        # $crc = $crc | 0b100000000;
       }
-      $crc = $crc >> 1;
-      $byte = $byte >> 1 ;
-    }  
+
+
+      $byte <<= 1 ;
+    }
+    printf " crc:%02x  ", $crc;  
+
   }
   
 
