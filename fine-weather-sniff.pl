@@ -3,6 +3,11 @@
 # v010 - code rewrite
 @windrose = qw (N NNO NO ONO O OSO SO SSO S SSW SW WSW W WNW NW NNW ); 
 
+# http://perltricks.com/article/37/2013/8/18/Catch-and-Handle-Signals-in-Perl
+# $SIG{INT} = sub { die "Caught a sigint $!" };
+$SIG{INT}  = \&sig_term_handler;
+
+
 # development dummy
 # $inpipe = "grep '\\[00\\] {88} 00' test868_250_01.dump";
 
@@ -14,8 +19,8 @@ $inpipe .= " -f 868.250e6";	# center frequ
 $inpipe .= " -a";		# analse option
 $inpipe .= " 2>&1 ";		# merge stderr
 
-$inpipe .= " | expect_unbuffer -p ";	# turn off buffering
-$inpipe .= " tee debug.log ";		# turn this off if stuff works!
+# $inpipe .= " | expect_unbuffer -p ";	# turn off buffering
+# $inpipe .= " tee debug.log ";		# turn this off if stuff works!
 
 # debug test dummy source
 # $inpipe = "cat test868_250_01.dump";
@@ -31,7 +36,7 @@ $inpipe .= " |";
 
 # debug printing level 0...3 
 # $debug = 0;
-$debug = 3;
+$debug = 1;
 
 
 debug_print (2, sprintf "opening >%s< \n", $inpipe); 
@@ -105,7 +110,7 @@ while(<INPUT>) {
 
   # print "\n";
   # printf " digest %02x - check vs %s\n", $crc, $crx;
-  debug_print (1, sprintf " digest %02x \n ", $crc) ;
+  debug_print (3, sprintf " digest %02x \n ", $crc) ;
 
   unless ($crc == hex $bytes[9]) {
     debug_print (2, sprintf "skipping crc-error: digest=%02x, checksum=%s\n", $crc, $bytes[9]); 
@@ -173,4 +178,14 @@ sub debug_print {
   $level = shift @_;
   print STDERR @_ if ( $level <= $debug) ;
   # print  @_ if $debug ;
+}
+
+
+# kill the radio before exiting to release tuner port
+sub sig_term_handler {
+  debug_print (1, "caught TERM signal - $! \n");
+  debug_print (1, "doing a >killall -9 rtl_433< \n");
+  system "killall -9 rtl_433";
+  sleep(5);
+  die "now exiting";
 }
