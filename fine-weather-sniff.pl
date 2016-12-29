@@ -16,7 +16,7 @@ while(<INPUT>) {
   print join '#', @bytes_ff ;
   print "\n";
 
-  @bytes = qw( );
+  @bytes = ();
   foreach $byte_h (@bytes_ff) {
     push ( @bytes, ( sprintf "%02x" , (hex $byte_h ^ 0xff) ) );
 
@@ -39,12 +39,13 @@ while(<INPUT>) {
   print $raw;
   print "\n";
 
-exit ; # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# exit ; # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
   # $chksum = 0;
   $crc = 0b00000000;
 
-  foreach $byte_h (@bytes) {
+  while (0) {
+  # foreach $byte_h (@bytes) {
     $byte = hex $byte_h ^ 0xff;
     printf "%s - %02x : " ,  $byte_h, $byte;
     # see http://qs343.pair.com/~monkperl/index.pl?node_id=1064732
@@ -65,7 +66,7 @@ exit ; # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
   
 
   print "\n";
-  printf " digest %02x - check vs %s\n", $crc, $crx;
+#   printf " digest %02x - check vs %s\n", $crc, $crx;
 
 	# http://www.susa.net/wordpress/2012/08/
 	# 	raspberry-pi-reading-wh1081-weather-sensors-using-an-rfm01-and-rfm12b/#comment-1138
@@ -82,34 +83,30 @@ exit ; # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 	#    q: battery-low indicator
 	#    r: wind direction
 	#    st: checksum
-  # ($ident, $tmp, $hum, $wspeed, $gust,  $raincnt, $lobat, $wdir, $crc) 
-  # @list
-  #	= ( $_ =~ /(...)(...)(..)(..)(..).(...)(.)(.)(..)/ ); 
 
-  ($ident, $tmp, $hum, $wspeed, $wgust,  $raincnt, $lobat, $wdir, $crc) 
+  ($ident_h, $temp_h, $hum_h, $wspeed_h, $wgust_h,  $raincnt_h, $lobat_h, $wdir_h, $crc_h) 
 	= ( $raw =~ /(...)(...)(..)(..)(..).(...)(.)(.)(..)/ );
 
-  # print join " - " , @list;
-  # print "\n";
-
-
   printf "  RAW:  ident: %s T=%s RF=%s WS=%s Gst=%s raincnt=%s lob=%s, wd=%s crc=%s " ,
-        $ident, $tmp, $hum, $wspeed, $wgust,  $raincnt, $lobat, $wdir, $crc;
+        $ident_h, $temp_h, $hum_h, $wspeed_h, $wgust_h,  $raincnt_h, $lobat_h, $wdir_h, $crc_h;
   print "\n";
 
-  $ident = hex $ident ^ 0xfff;
-  $tmp = ((hex $tmp ^ 0xfff) - 400) / 10 ; 
-  $hum = hex $hum ^ 0xff;
-  $wspeed = (hex $wspeed ^ 0xff) * 0.34 ;
-  $wgust  = (hex $wgust  ^ 0xff) * 0.34 ;
-  $raincnt  = (hex $raincnt  ^ 0xfff) * 0.3 ;
-  $lobat = hex $lobat ^ 0xf; 
-  $wdir = $windrose[hex $wdir ^ 0xf];
+# exit ; # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-  $crc = sprintf "%02x",  (hex $crc ^ 0xff);
- 
+  $ident = hex $ident_h ;
+  $temp = ((hex $temp_h ) - 400) / 10 ; 
+  $hum = hex $hum_h ;
+  $wspeed = (hex $wspeed_h ) * 0.34 ;
+  $wgust  = (hex $wgust_h  ) * 0.34 ;
+  $raincnt  = (hex $raincnt_h ) * 0.3 ;
+  $lobat = hex $lobat_h ; 
+  $wdir = $windrose[hex $wdir_h ];
+
+  # $crc = sprintf "%02x",  (hex $crc ^ 0xff);
+  $crc = $crc_h; 
+
   printf "  CONV: ident: %s T=%s RF=%s WS=%s Gst=%s raincnt=%s lob=%s, wd=%s crc=%s " , 
-	$ident, $tmp, $hum, $wspeed, $wgust,  $raincnt, $lobat, $wdir, $crc;
+	$ident, $temp, $hum, $wspeed, $wgust,  $raincnt, $lobat, $wdir, $crc;
   print "\n";
   print "\n";
 
