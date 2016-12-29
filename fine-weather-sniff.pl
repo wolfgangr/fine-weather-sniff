@@ -41,13 +41,28 @@ open (INPUT, $inpipe) || die (sprintf "cannot open >%s< \n", $inpipe) ;
 while(<INPUT>) {
   chomp;
 
-  next unless ($_) ; 	# skip empty lines
+  # next unless ($_) ; 	# skip empty lines
+  unless ($_) {
+    debug_print (3, "skipping empty line\n");
+    next;
+  }
 
   @bytes_ff = split ' ';
   debug_print (2, join '#', @bytes_ff) ;
   debug_print (2, "\n");
 
-  next unless (scalar @bytes_ff == 10);	# skip bs formats
+  unless (scalar @bytes_ff ) {
+    debug_print (3, "skipping line without data\n");
+    next;
+  }
+
+  # next unless (scalar @bytes_ff == 10);	# skip bs formats
+  unless (scalar @bytes_ff == 10) {
+    debug_print (2, sprintf "skipping garbage format >>>%s<<<\n", $_);  
+    next;
+  }
+
+
 
   @bytes = ();
   foreach $byte_h (@bytes_ff) {
@@ -91,6 +106,12 @@ while(<INPUT>) {
   # print "\n";
   # printf " digest %02x - check vs %s\n", $crc, $crx;
   debug_print (1, sprintf " digest %02x \n ", $crc) ;
+
+  unless ($crc == hex $bytes[9]) {
+    debug_print (2, sprintf "skipping crc-error: digest=%02x, checksum=%s\n", $crc, $bytes[9]); 
+    debug_print (3, $_);
+    next;
+  }
 
 	# http://www.susa.net/wordpress/2012/08/
 	# 	raspberry-pi-reading-wh1081-weather-sensors-using-an-rfm01-and-rfm12b/#comment-1138
