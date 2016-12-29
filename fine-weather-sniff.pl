@@ -15,7 +15,7 @@ $inpipe .= " -a";		# analse option
 $inpipe .= " 2>&1 ";		# merge stderr
 
 $inpipe .= " | expect_unbuffer -p ";	# turn off buffering
-$inpipe .= " tee debug.log ";
+$inpipe .= " tee debug.log ";		# turn this off if stuff works!
 
 # debug test dummy source
 # $inpipe = "cat test868_250_01.dump";
@@ -41,10 +41,13 @@ open (INPUT, $inpipe) || die (sprintf "cannot open >%s< \n", $inpipe) ;
 while(<INPUT>) {
   chomp;
 
+  next unless ($_) ; 	# skip empty lines
+
   @bytes_ff = split ' ';
   debug_print (2, join '#', @bytes_ff) ;
   debug_print (2, "\n");
 
+  next unless (scalar @bytes_ff == 10);	# skip bs formats
 
   @bytes = ();
   foreach $byte_h (@bytes_ff) {
