@@ -7,6 +7,8 @@ $inpipe = "grep '\\[00\\] {88} 00' test868_250_01.dump";
 $inpipe .= " | cut -b14-42";
 $inpipe .= " |";
 
+# debug printing on/off
+$debug = 0;
 $debug = 1;
 
 open (INPUT, $inpipe);
@@ -15,9 +17,8 @@ while(<INPUT>) {
   chomp;
 
   @bytes_ff = split ' ';
-  if $debug print join '#', @bytes_ff ;
-  if $debug print "\n";
-
+  debug_print (join '#', @bytes_ff) ;
+  debug_print ("\n");
 
 
   @bytes = ();
@@ -25,19 +26,19 @@ while(<INPUT>) {
     push ( @bytes, ( sprintf "%02x" , (hex $byte_h ^ 0xff) ) );
   }
 
-  print join ':', @bytes ;
-  print "\n";
+  debug_print (join ':', @bytes );
+  debug_print ("\n");
 
   s/ //g;	# remove all space
   $rawFF = $_;
 
-  print $rawFF;
-  print "\n";
+  debug_print ($rawFF);
+  debug_print ("\n");
 
   $raw = join '', @bytes ;
   
-  print $raw;
-  print "\n";
+  debug_print ($raw);
+  debug_print ("\n");
 
   # calculate checsum
   # adapted from
@@ -59,9 +60,9 @@ while(<INPUT>) {
   }
   
 
-  print "\n";
+  # print "\n";
   # printf " digest %02x - check vs %s\n", $crc, $crx;
-  printf " digest %02x \n ", $crc ;
+  debug_print (sprintf " digest %02x \n ", $crc) ;
 
 	# http://www.susa.net/wordpress/2012/08/
 	# 	raspberry-pi-reading-wh1081-weather-sensors-using-an-rfm01-and-rfm12b/#comment-1138
@@ -83,9 +84,9 @@ while(<INPUT>) {
   ($ident_h, $temp_h, $hum_h, $wspeed_h, $wgust_h,  $raincnt_h, $lobat_h, $wdir_h, $crc_h) 
 	= ( $raw =~ /(...)(...)(..)(..)(..).(...)(.)(.)(..)/ );
 
-  printf "  RAW:  ident: %s T=%s RF=%s WS=%s Gst=%s raincnt=%s lob=%s, wd=%s crc=%s " ,
-        $ident_h, $temp_h, $hum_h, $wspeed_h, $wgust_h,  $raincnt_h, $lobat_h, $wdir_h, $crc_h;
-  print "\n";
+  debug_print(sprintf "  RAW:  ident: %s T=%s RF=%s WS=%s Gst=%s raincnt=%s lob=%s, wd=%s crc=%s \n" ,
+        $ident_h, $temp_h, $hum_h, $wspeed_h, $wgust_h,  $raincnt_h, $lobat_h, $wdir_h, $crc_h);
+  # print "\n";
 
 # exit ; # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -103,13 +104,22 @@ while(<INPUT>) {
   # $crc = sprintf "%02x",  (hex $crc ^ 0xff);
   $crc = $crc_h; 
 
-  printf "  CONV: ident: %s T=%s RF=%s WS=%s Gst=%s raincnt=%s lob=%s, wd=%s crc=%s " , 
-	$ident, $temp, $hum, $wspeed, $wgust,  $raincnt, $lobat, $wdir, $crc;
-  print "\n";
-  print "\n";
+  debug_print (sprintf "  CONV: ident: %s T=%s RF=%s WS=%s Gst=%s raincnt=%s lob=%s, wd=%s crc=%s \n" , 
+	$ident, $temp, $hum, $wspeed, $wgust,  $raincnt, $lobat, $wdir, $crc);
+  debug_print ("\n");
+  # print "\n";
 
 }
 
 
 close (INPUT);
 
+
+exit ;
+
+#============================================
+
+sub debug_print {
+  print STDERR @_ if $debug ;
+  # print  @_ if $debug ;
+}
