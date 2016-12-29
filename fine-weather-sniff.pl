@@ -1,10 +1,8 @@
 #!/usr/bin/perl -w strict
 
-
+# v010 - code rewrite
 @windrose = qw (N NNO NO ONO O OSO SO SSO S SSW SW WSW W WNW NW NNW ); 
 
-# $inpipe = "grep '\[00\] {88} 00' test868_250_01.dump";
-# $inpipe = "echo foobartralalal";
 $inpipe = "grep '\\[00\\] {88} 00' test868_250_01.dump";
 $inpipe .= " | cut -b14-42";
 $inpipe .= " |";
@@ -14,17 +12,35 @@ open (INPUT, $inpipe);
 while(<INPUT>) {
   chomp;
 
-  @bytes = split ' ';
+  @bytes_ff = split ' ';
+  print join '#', @bytes_ff ;
+  print "\n";
+
+  @bytes = qw( );
+  foreach $byte_h (@bytes_ff) {
+    push ( @bytes, ( sprintf "%02x" , (hex $byte_h ^ 0xff) ) );
+
+  }
+
   print join ':', @bytes ;
   print "\n";
 
-  s/ //g;	# remove all space
-  $raw = $_;
+# exit ; # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+
+  s/ //g;	# remove all space
+  $rawFF = $_;
+
+  print $rawFF;
+  print "\n";
+
+  $raw = join '', @bytes ;
+  
   print $raw;
   print "\n";
 
-  
+exit ; # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
   # $chksum = 0;
   $crc = 0b00000000;
 
