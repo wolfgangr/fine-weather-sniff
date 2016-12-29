@@ -65,7 +65,7 @@ $inpipe .= " |";
 
 ############################
 # debug test dummy source
-if (1) { 
+if (0) { 
   $inpipe = "grep '\\[00\\] {88} 00' test868_250_01.dump";
   # $inpipe = "cat debug.log ";
 
@@ -237,7 +237,7 @@ while(<INPUT>) {
   $sql .= " );" ;
 
   debug_print (2, "SQL-Statement: $sql \n");
-  sleep(1);	####### for debug - generate different timestamps! 
+  ## sleep(1);	####### for debug - generate different timestamps! 
 
   # execute sql statement
   $affected = $dbh->do($sql);
