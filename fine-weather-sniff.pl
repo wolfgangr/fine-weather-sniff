@@ -1,6 +1,5 @@
 #!/usr/bin/perl -w strict
 
-use Digest::CRC;
 
 @windrose = qw (N NNO NO ONO O OSO SO SSO S SSW SW WSW W WNW NW NNW ); 
 
@@ -25,27 +24,20 @@ while(<INPUT>) {
   print $raw;
   print "\n";
 
-  # check CRC  The CRC-8 polynomial used is x^8 + x^5 + x^4 + 1
-  $crx = pop @bytes;
   
   # $chksum = 0;
+  $crc = 0b00000000;
 
-  # cmp http://rants.dyer.com.hk/rpi/humidity_1w.html
-  $ctx = Digest::CRC->new(width => 8, poly => 0x31, init => 0x00, xorout => 0x00, 
-		refin => 1, refout => 1, cont=>0);
+  foreach $byte_h (@bytes) {
+    $byte = hex $byte_h ^ 0xff;
+    printf "%s - %02x : " ,  $byte_h, $byte;
 
-  $chkstr ="";
-  foreach $byte (@bytes) {
-    $byte_ = hex $byte ^ 0xff;
-    printf "%s - %02x : " ,  $byte, $byte_;
-    # $ctx->add(chr ($byte_) );
-    # $ctx->add(chr ( hex $byte ^ 0xff));
-    $chkstr .= chr ($byte_);
+
   }
-  $ctx->add($chkstr);
+  
+
   print "\n";
-  $crout = $ctx->digest;
-  printf " digest %02x - check vs %s\n", $crout, $crx;
+  # printf " digest %02x - check vs %s\n", $crout, $crx;
 
 	# http://www.susa.net/wordpress/2012/08/
 	# 	raspberry-pi-reading-wh1081-weather-sensors-using-an-rfm01-and-rfm12b/#comment-1138
