@@ -44,10 +44,10 @@ while(<INPUT>) {
   # $chksum = 0;
   $crc = 0b00000000;
 
-  while (0) {
-  # foreach $byte_h (@bytes) {
-    $byte = hex $byte_h ^ 0xff;
-    printf "%s - %02x : " ,  $byte_h, $byte;
+  # while (0) {
+  foreach $byte_h (@bytes) {
+    $byte = hex $byte_h ;
+    # printf "%s - %02x : " ,  $byte_h, $byte;
     # see http://qs343.pair.com/~monkperl/index.pl?node_id=1064732
     for ($n = 0; $n <= 7; $n++) {
       $bit = $byte & 0b00000001;
@@ -55,18 +55,20 @@ while(<INPUT>) {
       $test = $test & 0b00000001;      
       if ($test) {
         $crc = $crc ^ 0b00011000;
-        $crc = $crc >> 1;
-        $crc = $crc | 0b10000000;
-      } else {
-        $crc = $crc >> 1;
+        # $crc = $crc >> 1;
+        $crc = $crc | 0b100000000;
+      # } else {
+      #   $crc = $crc >> 1;
       }
-      $byte = ( $byte >> 1 );
+      $crc = $crc >> 1;
+      $byte = $byte >> 1 ;
     }  
   }
   
 
   print "\n";
-#   printf " digest %02x - check vs %s\n", $crc, $crx;
+  # printf " digest %02x - check vs %s\n", $crc, $crx;
+  printf " digest %02x \n ", $crc ;
 
 	# http://www.susa.net/wordpress/2012/08/
 	# 	raspberry-pi-reading-wh1081-weather-sensors-using-an-rfm01-and-rfm12b/#comment-1138
@@ -84,6 +86,7 @@ while(<INPUT>) {
 	#    r: wind direction
 	#    st: checksum
 
+  # extract the fields
   ($ident_h, $temp_h, $hum_h, $wspeed_h, $wgust_h,  $raincnt_h, $lobat_h, $wdir_h, $crc_h) 
 	= ( $raw =~ /(...)(...)(..)(..)(..).(...)(.)(.)(..)/ );
 
@@ -93,6 +96,8 @@ while(<INPUT>) {
 
 # exit ; # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+  # numerize and renorm as required
+  # use unpack instead ? looks like a biest.....
   $ident = hex $ident_h ;
   $temp = ((hex $temp_h ) - 400) / 10 ; 
   $hum = hex $hum_h ;
