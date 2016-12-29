@@ -12,10 +12,17 @@ open (INPUT, $inpipe);
 
 while(<INPUT>) {
   chomp;
+
+  @bytes = split ' ';
+  print join ':', @bytes ;
+  print "\n";
+
   s/ //g;	# remove all space
+  $raw = $_;
+
   # $_ = "0x" . $_;
   # print ">>>";	
-  print $_;
+  print $raw;
   print "\n";
   # print "<<<\n";
 
@@ -41,13 +48,14 @@ while(<INPUT>) {
 	#    r: wind direction
 	#    st: checksum
   # ($ident, $tmp, $hum, $wspeed, $gust,  $raincnt, $lobat, $wdir, $crc) 
-  @list
-	= ( $_ =~ /(...)(...)(..)(..)(..).(...)(.)(.)(..)/ ); 
+  # @list
+  #	= ( $_ =~ /(...)(...)(..)(..)(..).(...)(.)(.)(..)/ ); 
 
-  ($ident, $tmp, $hum, $wspeed, $wgust,  $raincnt, $lobat, $wdir, $crc) = @list;
+  ($ident, $tmp, $hum, $wspeed, $wgust,  $raincnt, $lobat, $wdir, $crc) 
+	= ( $raw =~ /(...)(...)(..)(..)(..).(...)(.)(.)(..)/ );
 
-  print join " - " , @list;
-  print "\n";
+  # print join " - " , @list;
+  # print "\n";
 
 
   printf "  RAW:  ident: %s T=%s RF=%s WS=%s Gst=%s raincnt=%s lob=%s, wd=%s crc=%s " ,
