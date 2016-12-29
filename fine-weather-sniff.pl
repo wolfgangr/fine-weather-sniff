@@ -3,15 +3,36 @@
 # v010 - code rewrite
 @windrose = qw (N NNO NO ONO O OSO SO SSO S SSW SW WSW W WNW NW NNW ); 
 
-$inpipe = "grep '\\[00\\] {88} 00' test868_250_01.dump";
+# development dummy
+# $inpipe = "grep '\\[00\\] {88} 00' test868_250_01.dump";
+
+# $inpipe = "rtl_433-master/build/src/" ;
+
+$inpipe = "~/test/sdr/rtl-433/rtl_433/build/src/";	# path to executable
+$inpipe .= "rtl_433";		# executable
+$inpipe .= " -f 868.250e6";	# center frequ
+$inpipe .= " -a";		# analse option
+$inpipe .= " 2>&1 ";		# merge stderr
+
+# $inpipe .= " | tee debug.log ";
+
+# debug test dummy source
+# $inpipe = "cat test868_250_01.dump";
+$inpipe = "cat debug.log ";
+
+$inpipe .= " | grep '\\[00\\] {88} 00' ";
+
 $inpipe .= " | cut -b14-42";
 $inpipe .= " |";
 
 # debug printing level 0...3 
-$debug = 0;
-$debug = 1;
+# $debug = 0;
+$debug = 3;
 
-open (INPUT, $inpipe);
+
+debug_print (2, sprintf "opening >%s< \n", $inpipe); 
+
+open (INPUT, $inpipe) || die (sprintf "cannot open >%s< \n", $inpipe) ;
 
 while(<INPUT>) {
   chomp;
