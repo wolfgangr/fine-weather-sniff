@@ -1,12 +1,45 @@
 #!/usr/bin/perl -w strict
 
 # v010 - code rewrite
+# v030 - reasonably works for live console output
+# pending: database stuff
+
+
+  $DBHost    = 'cleo.rosner.lokal';
+  $database  = 'wetter_sdr';
+  $user      = 'wetter_sdr';
+  $passwd    = 'VEv3BUS3eMMMmtGV';
+
+
+
+# debug printing level 0...3
+# $debug = 0;
+$debug = 2;
+
+#========================================================
+			# required modules:
+use DBD::mysql;		# mysql database access
+$driver = "mysql";
+
+# use LWP::Simple;	# http retriever
+use Data::Dumper;	# for debug
+
+# use Options ;		# evaluate cmd line options
+
+use POSIX qw(strftime);	# time string formatting
+
+#========================================================
+
+
 @windrose = qw (N NNO NO ONO O OSO SO SSO S SSW SW WSW W WNW NW NNW ); 
 
 # http://perltricks.com/article/37/2013/8/18/Catch-and-Handle-Signals-in-Perl
 # $SIG{INT} = sub { die "Caught a sigint $!" };
 $SIG{INT}  = \&sig_term_handler;
 
+#========================================================
+# interface to local rtl-433 installation 
+# to be configured - at least the path
 
 # development dummy
 # $inpipe = "grep '\\[00\\] {88} 00' test868_250_01.dump";
@@ -22,10 +55,6 @@ $inpipe .= " 2>&1 ";		# merge stderr
 # $inpipe .= " | expect_unbuffer -p ";	# turn off buffering
 # $inpipe .= " tee debug.log ";		# turn this off if stuff works!
 
-# debug test dummy source
-# $inpipe = "cat test868_250_01.dump";
-# $inpipe = "cat debug.log ";
-
 $inpipe .= " | expect_unbuffer -p ";
 $inpipe .= " grep '\\[00\\] {88} 00' ";
 
@@ -34,11 +63,31 @@ $inpipe .= " cut -b14-42";
 
 $inpipe .= " |";
 
-# debug printing level 0...3 
-# $debug = 0;
-$debug = 1;
+############################
+# debug test dummy source
+if (1) { 
+  $inpipe = "grep '\\[00\\] {88} 00' test868_250_01.dump";
+  # $inpipe = "cat debug.log ";
 
+  $inpipe .= " | cut -b14-42 ";
+  $inpipe .= " |";
+}
 
+#=============================================================
+# working code starting here
+
+# open database connection
+
+debug_print(2, "\n$0 connecting as user <$user> to database <$database> at host <$DBHost>...\n");
+
+$dsn = "DBI:$driver:$database;$DBHost";
+$dbh = DBI->connect($dsn, $user, $passwd) 
+	|| die ("Could not connect to database: $DBI::errstr\n");
+	# || sqlerror($dbh, "", "Could not connect: $DBI::errstr\n");
+
+debug_print(2,  "\t...connected to database \n\n") ;
+
+# open radio
 debug_print (2, sprintf "opening >%s< \n", $inpipe); 
 
 open (INPUT, $inpipe) || die (sprintf "cannot open >%s< \n", $inpipe) ;
@@ -154,14 +203,40 @@ while(<INPUT>) {
   $raincnt  = (hex $raincnt_h ) * 0.3 ;
   $lobat = hex $lobat_h ; 
   $wdir = $windrose[hex $wdir_h ];
+  $wdir_n = (hex $wdir_h) * 22.5 ;
+  $wdir_n = 360 unless ($wdir_n); # N -> 360 deg, not 0  
 
   # $crc = sprintf "%02x",  (hex $crc ^ 0xff);
   $crc = $crc_h; 
 
-  debug_print (1, sprintf "  CONV: ident: %s T=%s RF=%s WS=%s Gst=%s raincnt=%s lob=%s, wd=%s crc=%s \n" , 
-	$ident, $temp, $hum, $wspeed, $wgust,  $raincnt, $lobat, $wdir, $crc);
+  debug_print (1, sprintf "  CONV: ident: %s T=%s RF=%s WS=%s Gst=%s raincnt=%s lob=%s, wd=%s (%s) crc=%s \n" , 
+	$ident, $temp, $hum, $wspeed, $wgust,  $raincnt, $lobat, $wdir_n, $wdir, $crc);
   debug_print (2, "\n");
   # print "\n";
+
+  # database timestamp format:
+  # 2011-12-30 00:06:00 	
+  $timestamp = strftime "%Y-%m-%d %H:%M:%S", gmtime; 
+  debug_print (1, "timestamp: $timestamp \n");
+
+
+# INSERT INTO `raw` ( `idx` , `hum_out` , `temp_out` , `wind_ave` , `wind_gust` , `wind_dir` , `rain_count` )
+# VALUES (
+# '2014-02-23 22:05:18', '89', '2.3', '2.38', '3.4', '225', '363.6 ')
+  $sql = "INSERT INTO `raw` (";
+  $sql .= "`idx` , `hum_out` , `temp_out` , `wind_ave` , `wind_gust` , `wind_dir` , `rain_count`, `lo_batt`";
+  $sql .= " ) VALUES ( ";
+  $sql .= sprintf ("'%s' , ", $timestamp);
+  $sql .= sprintf ("'%3d' , ", $hum);
+  $sql .= sprintf ("'%.1f' , ", $temp);
+  $sql .= sprintf ("'%.1f' , ", $wspeed);
+  $sql .= sprintf ("'%.1f' , ", $wgust);
+  $sql .= sprintf ("'%.1f' , ", $wdir_n);
+  $sql .= sprintf ("'%.1f' , ", $raincnt);
+  $sql .= sprintf ("'%1d'   ", $lobat);
+  $sql .= " );" ;
+
+  debug_print (2, "SQL-Statement: $sql \n");
 
 }
 
