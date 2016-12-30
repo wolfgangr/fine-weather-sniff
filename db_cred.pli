@@ -1,0 +1,5 @@
+# DB credentials
+  $DBHost    = 'your.host.IP';
+  $database  = 'weather_DB';
+  $user      = 'w_sdr_logger';
+  $passwd    = 'verySecretQWFY';

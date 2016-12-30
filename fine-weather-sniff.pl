@@ -5,11 +5,11 @@
 # pending: database stuff
 
 
-  $DBHost    = 'cleo.rosner.lokal';
-  $database  = 'wetter_sdr';
-  $user      = 'wetter_sdr';
-  $passwd    = 'VEv3BUS3eMMMmtGV';
-
+#  $DBHost    = 'cleo.rosner.lokal';
+#  $database  = 'wetter_sdr';
+#  $user      = 'wetter_sdr';
+#  $passwd    = 'VEv3BUS3eMMMmtGV';
+require "db_cred.pli" ; 
 
 
 # debug printing level 0...3
@@ -80,15 +80,15 @@ if (0) {
 
 # open database connection
 
-#debug_print(1, "\n$0 connecting as user <$user> to database <$database> at host <$DBHost>...\n");
+debug_print(1, "\n$0 connecting as user <$user> to database <$database> at host <$DBHost>...\n");
 
-#$dsn = "DBI:$driver:$database;$DBHost";
-#$dbh = DBI->connect($dsn, $user, $passwd) 
-		; ###### debug - not database
-#####	|| die ("Could not connect to database: $DBI::errstr\n");
-	# || sqlerror($dbh, "", "Could not connect: $DBI::errstr\n");
+$dsn = "DBI:$driver:$database;$DBHost";
+$dbh = DBI->connect($dsn, $user, $passwd) 
+# 		; ###### debug - not database
+	|| die ("Could not connect to database: $DBI::errstr\n");
+#  || sqlerror($dbh, "", "Could not connect: $DBI::errstr\n");
 
-#debug_print(1,  "\t...connected to database \n\n") ;
+debug_print(1,  "\t...connected to database \n\n") ;
 
 # open radio
 debug_print (1, sprintf "opening >%s< \n", $inpipe); 
@@ -245,7 +245,7 @@ while(<INPUT>) {
   ## sleep(1);	####### for debug - generate different timestamps! 
 
   # execute sql statement
- ####  $affected = $dbh->do($sql);
+  $affected = $dbh->do($sql);
   debug_print (2, "\t$affected Datasets updated\n");
 
 }
@@ -254,7 +254,7 @@ while(<INPUT>) {
 close (INPUT);
 
 # close database
-######### $dbh->disconnect ;
+$dbh->disconnect ;
 
 exit ;
 
